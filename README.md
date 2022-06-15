@@ -76,8 +76,8 @@ There's a few more steps to it, but not much.
 
 React-snapshot will crawl all links that it finds. You can create "site map" page, which will contain links to all pages.
 
-- We move `build/index.html` to `build/200.html` at the beginning, because it's a nice convention. Hosts like [surge.sh](https://surge.sh) understand this, serving `200.html` if no snapshot exists for a URL. If you use a different host I'm sure you can make it do the same.
-- `pushstate-server` is used to serve the `build` directory & serving `200.html` by default
+- We move `build/index.html` to `build/template.html` at the beginning, because it's a nice convention. Hosts like [surge.sh](https://surge.sh) understand this, serving `_template.html` if no snapshot exists for a URL. If you use a different host I'm sure you can make it do the same.
+- `pushstate-server` is used to serve the `build` directory & serving `_template.html` by default
 - The fake browser is JSDOM, set to execute any local scripts (same origin) in order to actually run your React code, but it'll ignore any third-party scripts (analytics or social widgets)
 - We start a new JSDOM session for each URL to ensure that each page gets the absolute minimum HTML to render it.
 
@@ -85,10 +85,10 @@ React-snapshot will crawl all links that it finds. You can create "site map" pag
 
 This is a hacky experiment at the moment. I would really like to see how far we can take this approach so things "just work" without ever adding config. Off the top of my head:
 
-- [x] ~~Waiting on [pushstate-server#29](https://github.com/scottcorgan/pushstate-server/pull/29). Right now `pushstate-server` serves `200.html` _even if_ a HTML snapshot is present. So once you've run `react-snapshot`, you have to switch to `http-server` or `superstatic` to test if it worked. Or you could just push to [surge.sh](https://surge.sh) each time, which isn't too bad.~~
+- [x] ~~Waiting on [pushstate-server#29](https://github.com/scottcorgan/pushstate-server/pull/29). Right now `pushstate-server` serves `_template.html` _even if_ a HTML snapshot is present. So once you've run `react-snapshot`, you have to switch to `http-server` or `superstatic` to test if it worked. Or you could just push to [surge.sh](https://surge.sh) each time, which isn't too bad.~~
 - [x] ~~Is starting at `/` and crawling sufficient? Might there be unreachable sections of your site?~~
 - [x] ~~Should we exclude certain URLs? Maybe parse the `robots.txt` file?~~
-- [ ] What if you don't want the `200.html` pushstate fallback? What if you want to remove the bundle (effectively making this a static site generator)?
+- [ ] What if you don't want the `_template.html` pushstate fallback? What if you want to remove the bundle (effectively making this a static site generator)?
 - [ ] This doesn't pass down any state except what's contained in the markup. That feels ok for simple use-cases (you can always roll your own) but if you have a use-case where you need it and want zero-config raise an issue.
 - [x] #2 ~~I'm using a regexp to parse URLs out of the HTML because I wrote this on a flight with no wifi and couldn't NPM install anything. We should use a real parser. You should submit a PR to use a real parser. That would be real swell.~~
 - [ ] Should we clone the `build` directory to something like `snapshot` or `dist` instead of modifying it in-place?

@@ -17,11 +17,11 @@ export default class Server {
     // Yes I just copied most of this from react-scripts ¯\_(ツ)_/¯
     app.use(publicPath,
       historyApiFallback({
-        index: '/200.html',
+        index: '/_template.html',
         disableDotRule: true,
         htmlAcceptHeaders: ['text/html'],
       }),
-      express.static(baseDir, { index: '200.html' })
+      express.static(baseDir, { index: '_template.html' })
     )
 
     if (proxy) {

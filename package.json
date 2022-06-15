@@ -1,9 +1,10 @@
 {
-  "name": "react-snapshot",
-  "version": "1.3.0",
+  "name": "react-snapshot-2",
+  "version": "0.0.1",
   "description": "",
   "main": "lib/index.js",
-  "repository": "geelen/react-snapshot",
+  "repository": "ramiroaisen/react-snapshot",
+  "types": "./index.d.ts",
   "bin": {
     "react-snapshot": "./bin/react-snapshot.js"
   },
@@ -50,7 +51,7 @@
     "static-site-generator",
     "jsdom"
   ],
-  "author": "Glen Maddern",
+  "author": "Ramiro Aisen",
   "license": "ISC",
-  "homepage": "https://github.com/geelen/react-snapshot"
+  "homepage": "https://github.com/ramiroaisen/react-snapshot"
 }

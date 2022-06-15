@@ -6,7 +6,7 @@ import Crawler from './Crawler'
 import Writer from './Writer'
 import program from 'safe-commander'
 
-export default () => {
+export default async () => {
   program
     .version(require('../package.json').version)
     .option('--build-dir <directory>', `Specify where the JS app lives. Defaults to 'build'`)
@@ -37,26 +37,37 @@ export default () => {
   const outputDirPath = path.resolve(`./${outputDir}`)
   if (!fs.existsSync(buildDir)) throw new Error(`No build directory exists at: ${buildDirPath}`)
   const writer = new Writer(buildDirPath, outputDirPath)
-  writer.move('index.html', '200.html')
+  writer.move('index.html', '_template.html')
 
   const server = new Server(buildDirPath, basename, 0, pkg.proxy)
-  server.start().then(() => {
-    const crawler = new Crawler(`http://${domain}:${server.port()}${basename}`, options.snapshotDelay, options)
-    return crawler.crawl(({ urlPath, html }) => {
-      if (!urlPath.startsWith(basename)) {
-        console.log(`❗ Refusing to crawl ${urlPath} because it is outside of the ${basename} sub-folder`)
-        return
-      }
-      urlPath = urlPath.replace(basename, '/')
-      let filename = urlPath
-      if (urlPath.endsWith('/')) {
-        filename = `${urlPath}index.html`
-      } else if (path.extname(urlPath) == '') {
-        filename = `${urlPath}.html`
-      }
-      console.log(`✏️   Saving ${urlPath} as ${filename}`)
-      writer.write(filename, html)
-    })
+  await server.start();
+  
+  const crawler = new Crawler(`http://${domain}:${server.port()}${basename}`, options.snapshotDelay, options)
+  await crawler.crawl(({ urlPath, html }) => {
+    if (!urlPath.startsWith(basename)) {
+      console.log(`❗ Refusing to crawl ${urlPath} because it is outside of the ${basename} sub-folder`)
+      return
+    }
+    urlPath = urlPath.replace(basename, '/')
+    let filename = urlPath
+    //if (urlPath.endsWith('/')) {
+    
+    filename = `${urlPath}${urlPath.endsWith("/") ? "" : "/"}index.html`
+    //} else if (path.extname(urlPath) == '') {
+    //  filename = `${urlPath}.html`
+    //}
+    console.log(`✏️   Saving ${urlPath} as ${filename}`)
+    writer.write(filename, html)
+  })
 
-  }).then(() => server.stop(), err => console.log(`🔥 ${err}`))
+  const assets = require(buildDirPath + "/asset-manifest.json");
+  delete assets.files["index.html"];
+  assets.files["_template.html"] = "_template.html";
+  fs.writeFileSync(buildDirPath + "/asset-manifest.json", JSON.stringify(assets, null, 2));
+  console.log(" - Updated assets-manifest.json")
+  
+  fs.writeFileSync(buildDirPath + "/routes-manifest.json", JSON.stringify(crawler.routesManifest, null, 2));
+  console.log(" - Created routes-manifest.json")
+  
+  server.stop(), err => console.log(`🔥 ${err}`)
 }

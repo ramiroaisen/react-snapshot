@@ -17,6 +17,7 @@ export default class Crawler {
     this.stripJS = options.stripJS
     this.processed = {}
     this.snapshotDelay = snapshotDelay
+    this.routesManifest = [];
   }
 
   crawl(handler) {
@@ -33,6 +34,7 @@ export default class Crawler {
     if (this.processed[urlPath]) {
       return this.snap()
     } else {
+      this.routesManifest.push(urlPath)
       this.processed[urlPath] = true
     }
     return snapshot(this.protocol, this.host, urlPath, this.snapshotDelay).then(window => {
