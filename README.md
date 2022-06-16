@@ -1,6 +1,5 @@
-# 📸 React Snapshot
-
-⚠️⚠️⚠️ DEPRECATED: USE https://github.com/stereobooster/react-snap INSTEAD ⚠️⚠️
+# 📸 React Snapshot 2
+## Custom fork of original react-snapshot
 
 A zero-configuration static pre-renderer for React apps. Starting by targeting Create React App (because it's great)
 
@@ -14,7 +13,7 @@ The snapshots still have the normal JS bundle included, so once that downloads t
 
 ## The How To
 
-- First, `npm i -D react-snapshot`
+- First, `npm i -D react-snapshot-2`
 - Second, open your package.json and change `"scripts"` from
 
 ```diff
@@ -24,24 +23,29 @@ The snapshots still have the normal JS bundle included, so once that downloads t
 
 - Third, change your usage of `react-dom`:
 
-```diff
-- import ReactDOM from 'react-dom';
-+ import { render } from 'react-snapshot';
+```javascript
+import ReactDOM from "react-dom";
+import { prerendering, takeSnapshot } from 'react-snapshot-2';
 
-- ReactDOM.render(
-+ render(
-    <App/>,
-    document.getElementById('root')
-  );
+const node = document.getElementById("root");
+
+if(node.children.length) {
+  ReactDOM.hydrateRoot(node, app);
+} else {
+  const root = ReactDOM.createRoot(node);
+  root.render(app);
+  if(prerendering) takeSnapshot()
+}
 ```
+`prerendering` will be a boolean indicating if the current page is in prerendering mode.
 
-This calls `ReactDOM.render` in development and `ReactDOMServer.renderToString` when prerendering. If I can make this invisible I will but I can't think how at the moment.
+`takeSnapshot` is a function to indicate that the initial rendering is done
 
 ## Options
 You can specify additional paths as entry points for crawling that would otherwise not be found. It's also possible to exclude particular paths from crawling. Simply add a section called `"reactSnapshot"` to your package.json.
 
 ```
-  "reactSnapshot": {
+  "react-snapshot": {
     "include": [
       "/other-path",
       "/another/nested-path"
@@ -58,12 +62,6 @@ Note that exclude can be passed a glob, but include cannot.
 
 The default snapshot delay is 50ms, and this can be changed to suit your app's requirements.
 
-## The Demo
-
-Check out [create-react-app-snapshot.surge.sh](https://create-react-app-snapshot.surge.sh) for a live version or [geelen/create-react-app-snapshot](https://github.com/geelen/create-react-app-snapshot) for how it was built, starting from [create-react-app](https://github.com/facebookincubator/create-react-app)'s awesome baseline. No ejecting necessary, either.
-
-The [diff from the original create-react-app code](https://github.com/geelen/create-react-app-snapshot/compare/303f774...master) might be enlightening to you as well.
-
 ## The Implementation
 
 It's pretty simple in principle:
@@ -76,8 +74,7 @@ There's a few more steps to it, but not much.
 
 React-snapshot will crawl all links that it finds. You can create "site map" page, which will contain links to all pages.
 
-- We move `build/index.html` to `build/template.html` at the beginning, because it's a nice convention. Hosts like [surge.sh](https://surge.sh) understand this, serving `_template.html` if no snapshot exists for a URL. If you use a different host I'm sure you can make it do the same.
-- `pushstate-server` is used to serve the `build` directory & serving `_template.html` by default
+- We move `build/index.html` to `build/_template.html`
 - The fake browser is JSDOM, set to execute any local scripts (same origin) in order to actually run your React code, but it'll ignore any third-party scripts (analytics or social widgets)
 - We start a new JSDOM session for each URL to ensure that each page gets the absolute minimum HTML to render it.
 
@@ -106,5 +103,4 @@ This should work for simple cases. For less simple cases, go with:
 - Actually run a server-side React node server because you have more complex stuff to do, like pre-rendering stuff behind a login.
 
 ## License
-
 MIT
